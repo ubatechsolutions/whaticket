@@ -1,6 +1,8 @@
 const rules = {
 	user: {
-		static: [],
+		static: [
+			"ticket-options:transferWhatsapp",
+		],
 	},
 
 	admin: {
@@ -9,6 +11,7 @@ const rules = {
 			"tickets-manager:showall",
 			"user-modal:editProfile",
 			"user-modal:editQueues",
+			"ticket-options:transferWhatsapp",
 			"ticket-options:deleteTicket",
 			"contacts-page:deleteContact",
 		],

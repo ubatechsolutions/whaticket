@@ -77,7 +77,8 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   await CheckIsValidContact(newContact.number);
   const validNumber : any = await CheckContactNumber(newContact.number)
   
-  const profilePicUrl = await GetProfilePicUrl(validNumber);
+  // const profilePicUrl = await GetProfilePicUrl(validNumber);
+  const profilePicUrl = "/default-profile.png";
 
   let name = newContact.name
   let number = validNumber
@@ -89,7 +90,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     number,
     email,
     extraInfo,
-    profilePicUrl
+    // profilePicUrl
   });
 
   const io = getIO();

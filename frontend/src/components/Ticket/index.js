@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useHistory } from "react-router-dom";
 
 import { toast } from "react-toastify";
-import openSocket from "../../services/socket-io";
+import openSocket from "socket.io-client";
 import clsx from "clsx";
 
 import { Paper, makeStyles } from "@material-ui/core";
@@ -38,6 +38,8 @@ const useStyles = makeStyles((theme) => ({
   ticketActionButtons: {
     maxWidth: "50%",
     flexBasis: "50%",
+    left: "-50px",
+    position: "relative",
     display: "flex",
     [theme.breakpoints.down("sm")]: {
       maxWidth: "100%",
@@ -104,7 +106,7 @@ const Ticket = () => {
   }, [ticketId, history]);
 
   useEffect(() => {
-    const socket = openSocket();
+    const socket = openSocket(process.env.REACT_APP_BACKEND_URL);
 
     socket.on("connect", () => socket.emit("joinChatBox", ticketId));
 

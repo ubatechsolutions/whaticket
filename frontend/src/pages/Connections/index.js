@@ -23,6 +23,7 @@ import {
 	SignalCellularConnectedNoInternet2Bar,
 	SignalCellularConnectedNoInternet0Bar,
 	SignalCellular4Bar,
+	BatteryChargingFull,
 	CropFree,
 	DeleteOutline,
 } from "@material-ui/icons";
@@ -289,6 +290,23 @@ const Connections = () => {
 		);
 	};
 
+	const renderStatusBattery = whatsApp => {
+		return (
+			<div className={classes.customTableCell}>
+				{whatsApp.battery < 20 && (
+					<CustomToolTip title={whatsApp.battery}>
+						<BatteryChargingFull color="secondary" />
+					</CustomToolTip>
+				)}
+				{whatsApp.battery > 20 && (
+					<CustomToolTip title={whatsApp.battery}>
+						<BatteryChargingFull style={{ color: green[500] }} />
+					</CustomToolTip>
+				)}
+			</div>
+		);
+	};
+
 	return (
 		<MainContainer>
 			<ConfirmationModal
@@ -329,16 +347,19 @@ const Connections = () => {
 								{i18n.t("connections.table.name")}
 							</TableCell>
 							<TableCell align="center">
-								{i18n.t("connections.table.status")}
+								{i18n.t("connections.table.default")}
+							</TableCell>
+							<TableCell align="center">
+								{i18n.t("connections.table.battery")}
 							</TableCell>
 							<TableCell align="center">
 								{i18n.t("connections.table.session")}
 							</TableCell>
 							<TableCell align="center">
-								{i18n.t("connections.table.lastUpdate")}
+								{i18n.t("connections.table.status")}
 							</TableCell>
 							<TableCell align="center">
-								{i18n.t("connections.table.default")}
+								{i18n.t("connections.table.lastUpdate")}
 							</TableCell>
 							<TableCell align="center">
 								{i18n.t("connections.table.actions")}
@@ -355,6 +376,16 @@ const Connections = () => {
 										<TableRow key={whatsApp.id}>
 											<TableCell align="center">{whatsApp.name}</TableCell>
 											<TableCell align="center">
+												{whatsApp.isDefault && (
+													<div className={classes.customTableCell}>
+														<CheckCircle style={{ color: green[500] }} />
+													</div>
+												)}
+											</TableCell>
+											<TableCell align="center">
+												{renderStatusBattery(whatsApp)}
+											</TableCell>
+											<TableCell align="center">
 												{renderStatusToolTips(whatsApp)}
 											</TableCell>
 											<TableCell align="center">
@@ -362,13 +393,6 @@ const Connections = () => {
 											</TableCell>
 											<TableCell align="center">
 												{format(parseISO(whatsApp.updatedAt), "dd/MM/yy HH:mm")}
-											</TableCell>
-											<TableCell align="center">
-												{whatsApp.isDefault && (
-													<div className={classes.customTableCell}>
-														<CheckCircle style={{ color: green[500] }} />
-													</div>
-												)}
 											</TableCell>
 											<TableCell align="center">
 												<IconButton

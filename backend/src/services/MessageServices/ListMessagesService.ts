@@ -25,24 +25,30 @@ const ListMessagesService = async ({
     throw new AppError("ERR_NO_TICKET_FOUND", 404);
   }
 
-  // await setMessagesAsRead(ticket);
-  const limit = 20;
-  const offset = limit * (+pageNumber - 1);
+// await setMessagesAsRead(ticket);
+const limit = 20;
+const offset = limit * (+pageNumber - 1);
 
-  const { count, rows: messages } = await Message.findAndCountAll({
-    where: { ticketId },
-    limit,
-    include: [
-      "contact",
-      {
-        model: Message,
-        as: "quotedMsg",
-        include: ["contact"]
-      }
-    ],
-    offset,
-    order: [["createdAt", "DESC"]]
-  });
+const { count, rows: messages } = await Message.findAndCountAll({
+  //where: { ticketId },
+  //where: {contactid : ticket.contactId},
+  limit,
+  include: [
+    "contact",
+    {
+      model: Message,
+      as: "quotedMsg",
+      include: ["contact"]
+    },
+    {
+      model: Ticket,
+      where: {contactId: ticket.contactId  },
+      required: true
+    }
+  ],
+  offset,
+  order: [["createdAt", "DESC"]]
+});
 
   const hasMore = count > offset + messages.length;
 

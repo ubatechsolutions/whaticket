@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
   },
 
   toolbar: {
-    paddingRight: 24, // keep right padding when drawer closed
+    paddingRight: 20, // keep right padding when drawer closed
   },
   toolbarIcon: {
     display: "flex",
@@ -121,7 +121,7 @@ const LoggedInLayout = ({ children }) => {
 
   useEffect(() => {
     if (document.body.offsetWidth > 600) {
-      setDrawerOpen(true);
+      setDrawerOpen(false);
     }
   }, []);
 
@@ -217,7 +217,7 @@ const LoggedInLayout = ({ children }) => {
             noWrap
             className={classes.title}
           >
-            WhaTicket
+            Whatsapp
           </Typography>
           {user.id && <NotificationsPopOver />}
 

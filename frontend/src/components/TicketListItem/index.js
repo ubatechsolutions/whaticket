@@ -66,8 +66,10 @@ const useStyles = makeStyles(theme => ({
 
 	closedBadge: {
 		alignSelf: "center",
-		justifySelf: "flex-end",
-		marginRight: 32,
+		justifySelf: "center",
+		marginRight: 42,
+		top: "-2px",
+		paddingRight: 20,
 		marginLeft: "auto",
 	},
 
@@ -178,7 +180,7 @@ const TicketListItem = ({ ticket }) => {
 							{ticket.status === "closed" && (
 								<Badge
 									className={classes.closedBadge}
-									badgeContent={"closed"}
+									badgeContent={"Encerrada"}
 									color="primary"
 								/>
 							)}

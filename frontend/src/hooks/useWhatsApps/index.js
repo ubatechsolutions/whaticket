@@ -1,5 +1,5 @@
 import { useState, useEffect, useReducer } from "react";
-import openSocket from "../../services/socket-io";
+import openSocket from "socket.io-client";
 import toastError from "../../errors/toastError";
 
 import api from "../../services/api";
@@ -73,7 +73,7 @@ const useWhatsApps = () => {
 	}, []);
 
 	useEffect(() => {
-		const socket = openSocket();
+		const socket = openSocket(process.env.REACT_APP_BACKEND_URL);
 
 		socket.on("whatsapp", data => {
 			if (data.action === "update") {

@@ -3,6 +3,9 @@ import { promisify } from "util";
 import { writeFile } from "fs";
 import * as Sentry from "@sentry/node";
 
+import ListSettingsServiceOne from "../SettingServices/ListSettingsServiceOne";
+import Settings from "../../models/Setting";
+
 import {
   Contact as WbotContact,
   Message as WbotMessage,
@@ -33,7 +36,7 @@ interface Session extends Client {
 const writeFileAsync = promisify(writeFile);
 
 const verifyContact = async (msgContact: WbotContact): Promise<Contact> => {
-  const profilePicUrl = await msgContact.getProfilePicUrl();
+  /* const profilePicUrl = await msgContact.getProfilePicUrl();
 
   const contactData = {
     name: msgContact.name || msgContact.pushname || msgContact.id.user,
@@ -45,7 +48,30 @@ const verifyContact = async (msgContact: WbotContact): Promise<Contact> => {
   const contact = CreateOrUpdateContactService(contactData);
 
   return contact;
-};
+}; */
+
+try {
+  const profilePicUrl = await msgContact.getProfilePicUrl();
+  const contactData = {
+      name: msgContact.name || msgContact.pushname || msgContact.id.user,
+      number: msgContact.id.user,
+      profilePicUrl,
+      isGroup: msgContact.isGroup
+  };
+  const contact = CreateOrUpdateContactService(contactData);
+  return contact;
+}
+catch (err) {
+  const profilePicUrl = "/default-profile.png"; // Foto de perfil padrão
+  const contactData = {
+      name: msgContact.name || msgContact.pushname || msgContact.id.user,
+      number: msgContact.id.user,
+      profilePicUrl,
+      isGroup: msgContact.isGroup
+  };
+  const contact = CreateOrUpdateContactService(contactData);
+  return contact;
+}};
 
 const verifyQuotedMessage = async (
   msg: WbotMessage
@@ -76,10 +102,17 @@ const verifyMediaMessage = async (
     throw new Error("ERR_WAPP_DOWNLOAD_MEDIA");
   }
 
+  
+/* Check if media not have a filename
   if (!media.filename) {
     const ext = media.mimetype.split("/")[1].split(";")[0];
     media.filename = `${new Date().getTime()}.${ext}`;
   }
+*/
+let originalFilename = media.filename ? `-${media.filename}` : ''
+// Always write a random filename
+const ext = media.mimetype.split("/")[1].split(";")[0];
+media.filename = `${new Date().getTime()}${originalFilename}.${ext}`;
 
   try {
     await writeFileAsync(
@@ -87,6 +120,9 @@ const verifyMediaMessage = async (
       media.data,
       "base64"
     );
+
+
+    
   } catch (err) {
     Sentry.captureException(err);
     logger.error(err);
@@ -205,9 +241,11 @@ const verifyQueue = async (
 
 const isValidMsg = (msg: WbotMessage): boolean => {
   if (msg.from === "status@broadcast") return false;
+  
   if (
     msg.type === "chat" ||
     msg.type === "audio" ||
+    msg.type === "call_log" ||
     msg.type === "ptt" ||
     msg.type === "video" ||
     msg.type === "image" ||
@@ -215,6 +253,9 @@ const isValidMsg = (msg: WbotMessage): boolean => {
     msg.type === "vcard" ||
     //msg.type === "multi_vcard" ||
     msg.type === "sticker" ||
+    msg.type === "e2e_notification" || // Ignore Empty Messages Generated When Someone Changes His Account from Personal to Business or vice-versa
+    msg.type === "notification_template" || // Ignore Empty Messages Generated When Someone Changes His Account from Personal to Business or vice-versa
+    msg.author != null || // Ignore Group Messages
     msg.type === "location"
   )
     return true;
@@ -228,6 +269,21 @@ const handleMessage = async (
   if (!isValidMsg(msg)) {
     return;
   }
+
+  // Hide Group Message
+	const Settingdb = await Settings.findOne({where: { key: 'CheckMsgIsGroup' }});
+	if(Settingdb?.value == 'enabled') {
+		if (
+      msg.type === "sticker" ||
+      msg.type === "e2e_notification" || // Ignore Empty Messages Generated When Someone Changes His Account from Personal to Business or vice-versa
+      msg.type === "notification_template" || // Ignore Empty Messages Generated When Someone Changes His Account from Personal to Business or vice-versa
+		  msg.from === "status@broadcast" ||
+		  msg.author != null
+		) {
+			return;
+		}
+	}
+//Hide Group Message
 
   try {
     let msgContact: WbotContact;
@@ -247,7 +303,13 @@ const handleMessage = async (
 
       msgContact = await wbot.getContactById(msg.to);
     } else {
+
+      // Verifica se Cliente fez ligação/vídeo pelo wpp
+      const listSettingsService = await ListSettingsServiceOne({key: "call"});
+      var callSetting = listSettingsService?.value;
+
       msgContact = await msg.getContact();
+
     }
 
     const chat = await msg.getChat();
@@ -387,6 +449,12 @@ const handleMessage = async (
         console.log(error);
       }
     } */
+
+    if(msg.type==="call_log" && callSetting==="disabled"){
+      const sentMessage = await wbot.sendMessage(`${contact.number}@c.us`, "*Mensagem Automática:*\nAs chamadas de voz e vídeo estão desabilitas para esse WhatsApp, favor enviar uma mensagem de texto. Obrigado");
+      await verifyMessage(sentMessage, ticket, contact);
+    }
+
   } catch (err) {
     Sentry.captureException(err);
     logger.error(`Error handling whatsapp message: Err: ${err}`);
@@ -418,6 +486,7 @@ const handleMsgAck = async (msg: WbotMessage, ack: MessageAck) => {
       action: "update",
       message: messageToUpdate
     });
+    
   } catch (err) {
     Sentry.captureException(err);
     logger.error(`Error handling message ack. Err: ${err}`);
