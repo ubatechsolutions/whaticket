@@ -42,14 +42,15 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
       if (whatsapp && whatsapp.session) {
         sessionCfg = JSON.parse(whatsapp.session);
       }
-	  
+
 	  const wbot: Session = new Client({
         session: sessionCfg,
-        authStrategy: new LocalAuth({clientId: 'bd_'+whatsapp.id}),
-        puppeteer: { 
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        authStrategy: new LocalAuth({ clientId: `bd_${whatsapp.id}` }),
+        puppeteer: {
+          headless: true,
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
           executablePath: process.env.CHROME_BIN || undefined
-      },
+        }
       });
 
       wbot.initialize();
@@ -98,6 +99,7 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
           session: whatsapp
         });
 
+        wbot.destroy();
         reject(new Error("Error starting whatsapp session."));
       });
 
@@ -107,7 +109,8 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
         await whatsapp.update({
           status: "CONNECTED",
           qrcode: "",
-          retries: 0
+          retries: 0,
+          number: wbot.info.me.user
         });
 
         io.emit("whatsappSession", {
@@ -126,7 +129,7 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
 
         resolve(wbot);
       });
-    } catch (err) {
+    } catch (err:any) {
       logger.error(err);
     }
   });
@@ -148,7 +151,7 @@ export const removeWbot = (whatsappId: number): void => {
       sessions[sessionIndex].destroy();
       sessions.splice(sessionIndex, 1);
     }
-  } catch (err) {
+  } catch (err:any) {
     logger.error(err);
   }
 };

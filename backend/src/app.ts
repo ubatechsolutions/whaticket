@@ -28,6 +28,15 @@ app.use(Sentry.Handlers.requestHandler());
 app.use("/public", express.static(uploadConfig.directory));
 app.use(routes);
 
+app.get("/", (req, res) => {
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "text/html");
+  res.write(
+    "<title>WhaTicket.: Multi Atendimento via WhatsApp</title>"
+  );
+  res.end("<h1>Servidor On-Line</h1>");
+});
+
 app.use(Sentry.Handlers.errorHandler());
 
 app.use(async (err: Error, req: Request, res: Response, _: NextFunction) => {

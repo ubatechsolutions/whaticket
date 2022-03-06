@@ -330,6 +330,34 @@ const handleMessage = async (
     const unreadMessages = msg.fromMe ? 0 : chat.unreadCount;
 
     const contact = await verifyContact(msgContact);
+    
+//    let _ticket = await Ticket.findOne({
+//        where: {
+//          status: ["closed"],
+//          contacts_id: groupContact ? groupContact.id : contact.id
+//        },
+//        order: [
+//          ['id', 'DESC'],
+//        ]
+//      });
+      
+//     if (_ticket) {
+//        var message_farewell = whatsapp.farewellmessage;
+//        if (message_farewell && message_farewell.length > 5){
+//          var newstr = message_farewell.replace('{protocolo}', ${_ticket.id});
+//          newstr = newstr.replace('{contato}', contact.name);
+//          whatsapp.farewellmessage = newstr;
+//        }
+//      }
+    
+//    if (_ticket) {
+//      var message_farewell = whatsapp.farewellMessage;
+//      var newstr = message_farewell.replace('{protocolo}', `${_ticket.id}`);
+//      newstr = newstr.replace('{contato}', contact.name);
+//      whatsapp.farewellMessage = newstr;
+//    }
+    
+//    if (unreadMessages === 0 && whatsapp.farewellMessage && whatsapp.farewellMessage === msg.body) return;
 
     if (
       unreadMessages === 0 &&

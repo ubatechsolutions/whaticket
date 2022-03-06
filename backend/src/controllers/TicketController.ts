@@ -10,6 +10,9 @@ import SendWhatsAppMessage from "../services/WbotServices/SendWhatsAppMessage";
 import ShowWhatsAppService from "../services/WhatsappService/ShowWhatsAppService";
 import formatBody from "../helpers/Mustache";
 
+import ShowQueueService from "../services/QueueService/ShowQueueService";
+import ShowUserService from "../services/UserServices/ShowUserService";
+
 type IndexQuery = {
   searchParam: string;
   pageNumber: string;
@@ -25,6 +28,8 @@ interface TicketData {
   status: string;
   queueId: number;
   userId: number;
+  transf: boolean;
+  sendFarewellMessage: boolean;
 }
 
 export const index = async (req: Request, res: Response): Promise<Response> => {
@@ -93,19 +98,58 @@ export const update = async (
     ticketData,
     ticketId
   });
+  
+//    if(ticketData.transf) {
+//      const {name} = await ShowQueueService(ticketData.queueId);
+//      const msgtxt = "*_Mensagem Automática:_* \nVocê foi transferido(a) para o departamento *"+name+"*";
+//      await SendWhatsAppMessage({body: msgtxt, ticket});
+//  }
 
-  if (ticket.status === "closed") {
+    if (ticketData.transf) {
+        if(ticketData.userId) {
+            const {name} = await ShowQueueService(ticketData.queueId);
+            const nome = await ShowUserService(ticketData.userId);
+            const msgtxt = "*_Mensagem Automática:_* \nVocê foi transferido(a) para o departamento "+name+" e será atendido por "+nome.name+"";
+            await SendWhatsAppMessage({body: msgtxt, ticket});
+        } else {
+            const {name} = await ShowQueueService(ticketData.queueId);
+            const msgtxt = "*_Mensagem Automática:_* \nVocê foi transferido(a) para o departamento "+name+"";
+            await SendWhatsAppMessage({body: msgtxt, ticket});
+        }
+    }
+
+    if (ticket.status === "closed") {
     const whatsapp = await ShowWhatsAppService(ticket.whatsappId);
 
     const { farewellMessage } = whatsapp;
 
-    if (farewellMessage) {
+//    if (farewellMessage && (ticketData.sendFarewellMessage || ticketData.sendFarewellMessage === undefined)) {
+//       var str = farewellMessage;
+//       var newstr = str.replace('{protocolo}', '${ticket.id}');
+//       newstr = newstr.replace('{contato}', ticket.contact.name);
+//       await SendWhatsAppMessage({
+//        body: formatBody(newstr, farewellMessage, ticket.contact),
+//        body: newstr,
+//        ticket
+//      });
+//    }
+//  }
+
+    if (farewellMessage && (ticketData.sendFarewellMessage || ticketData.sendFarewellMessage === undefined)) {
       await SendWhatsAppMessage({
         body: formatBody(farewellMessage, ticket.contact),
         ticket
       });
     }
   }
+
+//    if (farewellMessage && (ticketData.sendFarewellMessage || ticketData.sendFarewellMessage === undefined)) {
+//      await SendWhatsAppMessage({
+//        body: formatBody(farewellMessage, ticket.contact),
+//        ticket
+//      });
+//    }
+//  }
 
   return res.status(200).json(ticket);
 };
