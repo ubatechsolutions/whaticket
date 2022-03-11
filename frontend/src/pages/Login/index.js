@@ -22,7 +22,7 @@ import { i18n } from "../../translate/i18n";
 
 import { AuthContext } from "../../context/Auth/AuthContext";
 
-import logoImg from "../../assets/logopreto.png";
+import logoImg from "../../assets/logotipo.png";
 
 const Copyright = () => {
   return (
