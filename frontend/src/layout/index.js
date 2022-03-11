@@ -25,7 +25,7 @@ import { AuthContext } from "../context/Auth/AuthContext";
 import BackdropLoading from "../components/BackdropLoading";
 import { i18n } from "../translate/i18n";
 
-import logobarra from "../assets/logopreto.png";
+import logobarra from "../assets/logotipo.png";
 
 const drawerWidth = 240;
 
